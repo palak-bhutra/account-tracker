@@ -1,0 +1,2433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Succesu₹e | Wise money management</title>
+  <meta name="description" content="Wise money management - Account Tracker" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <!-- Firebase (real-time shared database) -->
+  <script src="https://www.gstatic.com/firebasejs/12.11.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/12.11.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore-compat.js"></script>
+  <style>
+    :root {
+      --bg-primary: #f0f2f5;
+      --bg-secondary: #ffffff;
+      --bg-card: #ffffff;
+      --bg-elevated: #f8fafc;
+      --border: #e2e8f0;
+      --border-light: #f1f5f9;
+      --gold: #dd6023;
+      --gold-light: #f27233;
+      --gold-dim: rgba(221, 96, 35, 0.12);
+      --blue-accent: #266baf;
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --text-muted: #94a3b8;
+      --green: #10b981;
+      --green-dim: rgba(16,185,129,0.12);
+      --red: #ef4444;
+      --red-dim: rgba(239,68,68,0.12);
+      --yellow: #f59e0b;
+      --yellow-dim: rgba(245,158,11,0.12);
+      --radius: 12px;
+      --radius-sm: 8px;
+      --shadow: 0 8px 30px rgba(0,0,0,0.04);
+      --transition: 0.2s ease;
+    }
+    .submit-case-btn {
+      background: linear-gradient(135deg, var(--green), #059669);
+      color: #fff;
+      font-size: 1.1rem;
+      font-weight: 700;
+      padding: 1rem 2rem;
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      width: 100%;
+      box-shadow: 0 8px 24px var(--green-dim);
+      transition: var(--transition);
+      margin-top: 2rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .submit-case-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px var(--green-dim);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ===== SCROLLBAR ===== */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg-secondary); }
+    ::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 3px; }
+
+    /* ===== TYPOGRAPHY ===== */
+    h1, h2, h3, h4 { font-weight: 700; letter-spacing: -0.02em; }
+    h1 { font-size: 2rem; }
+    h2 { font-size: 1.5rem; }
+    h3 { font-size: 1.125rem; }
+    h4 { font-size: 0.95rem; }
+
+    /* ===== UTILITY ===== */
+    .hidden { display: none !important; }
+    .flex { display: flex; }
+    .flex-col { flex-direction: column; }
+    .items-center { align-items: center; }
+    .justify-between { justify-content: space-between; }
+    .gap-1 { gap: 0.25rem; }
+    .gap-2 { gap: 0.5rem; }
+    .gap-3 { gap: 0.75rem; }
+    .gap-4 { gap: 1rem; }
+    .gap-6 { gap: 1.5rem; }
+    .w-full { width: 100%; }
+    .text-sm { font-size: 0.85rem; }
+    .text-xs { font-size: 0.75rem; }
+    .text-gold { color: var(--gold); }
+    .text-muted { color: var(--text-secondary); }
+    .font-semibold { font-weight: 600; }
+    .font-bold { font-weight: 700; }
+    .mt-1 { margin-top: 0.25rem; }
+    .mt-2 { margin-top: 0.5rem; }
+    .mt-4 { margin-top: 1rem; }
+    .mt-6 { margin-top: 1.5rem; }
+    .mb-2 { margin-bottom: 0.5rem; }
+    .mb-4 { margin-bottom: 1rem; }
+    .mb-6 { margin-bottom: 1.5rem; }
+    .p-2 { padding: 0.5rem; }
+    .p-4 { padding: 1rem; }
+    .p-6 { padding: 1.5rem; }
+    .rounded { border-radius: var(--radius-sm); }
+    .rounded-full { border-radius: 9999px; }
+    .cursor-pointer { cursor: pointer; }
+
+    /* ===== BUTTONS ===== */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.55rem 1.2rem;
+      border-radius: var(--radius-sm);
+      border: none;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.875rem;
+      font-weight: 600;
+      transition: all var(--transition);
+      text-decoration: none;
+    }
+    .btn-primary {
+      background: var(--gold);
+      color: #ffffff;
+    }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(221, 96, 35, 0.25); }
+    
+    .brand-logo { display: inline-flex; font-family: 'Inter', sans-serif; font-weight: 800; letter-spacing: -0.01em; border-radius: 4px; overflow: hidden; line-height: 1.1; }
+    .brand-part-1 { background: var(--gold); color: #fff; padding: 0.15rem 0.2rem 0.15rem 0.35rem; }
+    .brand-part-2 { background: var(--blue-accent); color: #fff; padding: 0.15rem 0.35rem 0.15rem 0.2rem; }
+    .btn-secondary {
+      background: var(--bg-elevated);
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+    }
+    .btn-secondary:hover { border-color: var(--gold); color: var(--gold); }
+    .btn-danger {
+      background: var(--red-dim);
+      color: var(--red);
+      border: 1px solid rgba(239,68,68,0.3);
+    }
+    .btn-danger:hover { background: rgba(239,68,68,0.25); }
+    .btn-sm { padding: 0.35rem 0.8rem; font-size: 0.8rem; }
+    .btn-icon { padding: 0.45rem; width: 36px; height: 36px; justify-content: center; }
+
+    /* ===== INPUTS ===== */
+    .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
+    .form-label { font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; }
+    .form-input, .form-select, .form-textarea {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 0.65rem 0.9rem;
+      color: var(--text-primary);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem;
+      transition: border-color var(--transition);
+      width: 100%;
+    }
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      outline: none;
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px var(--gold-dim);
+    }
+    .form-select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238892b0' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 0.75rem center; background-size: 16px; }
+    .form-textarea { resize: vertical; min-height: 80px; }
+    .form-input::placeholder, .form-textarea::placeholder { color: var(--text-muted); }
+    .form-error { font-size: 0.78rem; color: var(--red); margin-top: 0.2rem; }
+
+    /* ===== CARDS ===== */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+    }
+    .card-sm { padding: 1rem; }
+    .card:hover { border-color: var(--border-light); }
+
+    /* ===== BADGES ===== */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      padding: 0.2rem 0.65rem;
+      border-radius: 100px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .badge-done { background: var(--green-dim); color: var(--green); }
+    .badge-pending { background: var(--yellow-dim); color: var(--yellow); }
+    .badge-roadblock { background: var(--red-dim); color: var(--red); }
+    .badge-not-started { background: rgba(136,146,176,0.1); color: var(--text-secondary); }
+    .badge-admin { background: var(--gold-dim); color: var(--gold); }
+    .badge-employee { background: rgba(59,130,246,0.12); color: var(--blue-accent); }
+
+    /* ===== STAT CARDS ===== */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+    }
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+    }
+    .stat-card.gold::before { background: linear-gradient(90deg, var(--gold), transparent); }
+    .stat-card.green::before { background: linear-gradient(90deg, var(--green), transparent); }
+    .stat-card.red::before { background: linear-gradient(90deg, var(--red), transparent); }
+    .stat-card.blue::before { background: linear-gradient(90deg, var(--blue-accent), transparent); }
+    .stat-card .stat-value { font-size: 2rem; font-weight: 800; margin-top: 0.5rem; }
+    .stat-card .stat-label { font-size: 0.8rem; color: var(--text-secondary); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }
+    .stat-card .stat-icon { font-size: 1.5rem; }
+
+    /* ===== LAYOUT ===== */
+    #app { display: flex; min-height: 100vh; }
+
+    /* ===== LOGIN PAGE ===== */
+    #login-page {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      width: 100%;
+      background: radial-gradient(ellipse at 20% 50%, rgba(221, 96, 35, 0.08) 0%, transparent 60%),
+                  radial-gradient(ellipse at 80% 20%, rgba(38, 107, 175, 0.08) 0%, transparent 50%),
+                  var(--bg-primary);
+    }
+    .login-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 2.5rem;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.08);
+    }
+    .login-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 2rem;
+    }
+    .login-logo-icon {
+      width: 48px; height: 48px;
+      background: var(--gold);
+      color: #ffffff;
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem;
+    }
+    .login-logo-text { font-size: 1.15rem; font-weight: 800; }
+    .login-logo-sub { font-size: 0.75rem; color: var(--text-secondary); font-weight: 400; }
+    .app-badge {
+      display: inline-block;
+      margin-top: 0.65rem;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--gold);
+      background: var(--gold-dim);
+      padding: 0.25rem 0.6rem;
+      border-radius: 100px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border: 1px solid rgba(221, 96, 35, 0.2);
+    }
+    .login-title { font-size: 1.5rem; font-weight: 700; margin-bottom: 0.25rem; }
+    .login-sub { color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.75rem; }
+    .login-form { display: flex; flex-direction: column; gap: 1rem; }
+    .demo-accounts {
+      margin-top: 1.5rem;
+      padding: 1rem;
+      background: var(--bg-secondary);
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+    }
+    .demo-accounts p { font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 0.5rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+    .demo-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.3rem 0.6rem;
+      margin: 0.2rem;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: border-color var(--transition);
+    }
+    .demo-chip:hover { border-color: var(--gold); color: var(--gold); }
+
+    /* ===== SIDEBAR ===== */
+    #sidebar {
+      width: 240px;
+      min-height: 100vh;
+      background: var(--bg-secondary);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0; left: 0;
+      z-index: 100;
+      transition: transform 0.3s ease;
+    }
+    .sidebar-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 1.25rem 1.25rem 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .sidebar-logo-icon {
+      width: 36px; height: 36px;
+      background: var(--gold);
+      color: #ffffff;
+      border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem;
+    }
+    .sidebar-logo-text { font-size: 0.95rem; font-weight: 800; line-height: 1.1; }
+    .sidebar-logo-sub { font-size: 0.65rem; color: var(--text-secondary); font-weight: 400; }
+    .sidebar-nav { flex: 1; padding: 1rem 0.75rem; display: flex; flex-direction: column; gap: 0.2rem; }
+    .nav-section-label {
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      padding: 0.75rem 0.5rem 0.25rem;
+    }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.6rem 0.75rem;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      transition: all var(--transition);
+      border: 1px solid transparent;
+    }
+    .nav-item:hover { background: var(--bg-elevated); color: var(--text-primary); }
+    .nav-item.active {
+      background: var(--gold-dim);
+      color: var(--gold);
+      border-color: rgba(240,180,41,0.2);
+      font-weight: 600;
+    }
+    .nav-item .nav-icon { font-size: 1rem; width: 20px; text-align: center; }
+    .sidebar-user {
+      padding: 1rem 1.25rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .user-avatar {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--gold), var(--blue-accent));
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 0.85rem; color: #fff;
+    }
+    .user-info { flex: 1; min-width: 0; }
+    .user-name { font-size: 0.85rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .user-role-text { font-size: 0.7rem; color: var(--text-secondary); }
+    .logout-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-secondary);
+      font-size: 1rem;
+      padding: 0.25rem;
+      border-radius: 6px;
+      transition: color var(--transition);
+    }
+    .logout-btn:hover { color: var(--red); }
+
+    /* ===== MAIN CONTENT ===== */
+    #main-content {
+      margin-left: 240px;
+      flex: 1;
+      padding: 2rem;
+      min-height: 100vh;
+    }
+    .page-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 1.75rem;
+      gap: 1rem;
+    }
+    .page-title { font-size: 1.5rem; font-weight: 800; }
+    .page-subtitle { font-size: 0.875rem; color: var(--text-secondary); margin-top: 0.2rem; }
+
+    /* ===== TABLE ===== */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    thead th {
+      padding: 0.75rem 1rem;
+      text-align: left;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-bottom: 1px solid var(--border);
+    }
+    tbody tr {
+      border-bottom: 1px solid var(--border);
+      transition: background var(--transition);
+      cursor: pointer;
+    }
+    tbody tr:hover { background: var(--bg-elevated); }
+    tbody td { padding: 0.9rem 1rem; font-size: 0.875rem; vertical-align: middle; }
+    tbody tr:last-child { border-bottom: none; }
+
+    /* ===== SEARCH / FILTER BAR ===== */
+    .filter-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1.25rem;
+      flex-wrap: wrap;
+    }
+    .search-wrap { position: relative; flex: 1; min-width: 200px; }
+    .search-icon {
+      position: absolute;
+      left: 0.75rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+    .search-input {
+      padding-left: 2.25rem !important;
+    }
+
+    /* ===== STAGE STEPPER ===== */
+    .stepper {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      margin-bottom: 2rem;
+      overflow-x: auto;
+      padding-bottom: 0.5rem;
+    }
+    .step-node {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-width: 120px;
+      flex: 1;
+      position: relative;
+    }
+    .step-node::after {
+      content: '';
+      position: absolute;
+      top: 18px;
+      left: 60%;
+      width: 80%;
+      height: 2px;
+      background: var(--border);
+      z-index: 0;
+    }
+    .step-node:last-child::after { display: none; }
+    .step-node.done::after { background: var(--green); }
+    .step-node.in-progress::after { background: var(--yellow); }
+    .step-circle {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.9rem;
+      font-weight: 700;
+      border: 2px solid var(--border);
+      background: var(--bg-card);
+      z-index: 1;
+      position: relative;
+      transition: all 0.3s ease;
+    }
+    .step-node.done .step-circle { background: var(--green); border-color: var(--green); color: #fff; }
+    .step-node.in-progress .step-circle { background: var(--gold-dim); border-color: var(--gold); color: var(--gold); }
+    .step-node.roadblock .step-circle { background: var(--red-dim); border-color: var(--red); color: var(--red); }
+    .step-label { font-size: 0.72rem; font-weight: 600; color: var(--text-secondary); margin-top: 0.4rem; text-align: center; }
+    .step-node.done .step-label { color: var(--green); }
+    .step-node.in-progress .step-label { color: var(--gold); }
+
+    /* ===== STAGE CARD ===== */
+    .stage-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 1rem;
+      overflow: hidden;
+    }
+    .stage-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 1rem 1.25rem;
+      cursor: pointer;
+      transition: background var(--transition);
+    }
+    .stage-header:hover { background: var(--bg-elevated); }
+    .stage-icon { font-size: 1.1rem; }
+    .stage-title { font-weight: 700; flex: 1; }
+    .stage-progress { font-size: 0.8rem; color: var(--text-secondary); }
+    .stage-chevron { color: var(--text-secondary); transition: transform 0.2s; font-size: 0.85rem; }
+    .stage-card.open .stage-chevron { transform: rotate(180deg); }
+    .stage-body { padding: 0 1.25rem 1.25rem; border-top: 1px solid var(--border); display: none; }
+    .stage-card.open .stage-body { display: block; }
+
+    /* ===== STEP ITEM ===== */
+    .step-item {
+      padding: 1rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .step-item:last-child { border-bottom: none; }
+    .step-item-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 0.75rem;
+    }
+    .step-title { font-size: 0.9rem; font-weight: 600; }
+    .step-meta { font-size: 0.73rem; color: var(--text-muted); margin-top: 0.15rem; }
+    .step-controls { display: flex; align-items: center; gap: 0.75rem; }
+    .step-comment-wrap { display: flex; gap: 0.5rem; }
+    .step-comment-wrap .form-textarea { min-height: 60px; font-size: 0.85rem; }
+    .step-comment-wrap .btn { align-self: flex-end; white-space: nowrap; }
+
+    /* ===== DOCUMENT CHECKLIST ===== */
+    .doc-checklist { display: flex; flex-direction: column; gap: 0.6rem; margin-top: 0.75rem; }
+    .doc-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.65rem 1rem;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      transition: border-color var(--transition);
+    }
+    .doc-row.received { border-color: rgba(16,185,129,0.3); background: rgba(16,185,129,0.04); }
+    .doc-name { flex: 1; font-size: 0.875rem; font-weight: 500; }
+    .doc-status-group { display: flex; align-items: center; gap: 0.75rem; }
+    .checkbox-wrap { display: flex; align-items: center; gap: 0.4rem; }
+    .checkbox-wrap input[type="checkbox"] {
+      width: 16px; height: 16px;
+      accent-color: var(--gold);
+      cursor: pointer;
+    }
+    .checkbox-wrap label { font-size: 0.78rem; color: var(--text-secondary); cursor: pointer; font-weight: 500; }
+
+    /* ===== MODAL ===== */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    .modal {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2rem;
+      width: 100%;
+      max-width: 520px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 32px 80px rgba(0,0,0,0.15);
+      animation: modal-in 0.2s ease;
+    }
+    @keyframes modal-in { from { opacity: 0; transform: translateY(20px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+    .modal-title { font-size: 1.2rem; font-weight: 700; }
+    .modal-close { background: none; border: none; cursor: pointer; color: var(--text-secondary); font-size: 1.2rem; padding: 0.25rem; border-radius: 6px; transition: color var(--transition); }
+    .modal-close:hover { color: var(--text-primary); }
+    .modal-form { display: flex; flex-direction: column; gap: 1rem; }
+    .modal-actions { display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.5rem; }
+
+    /* ===== PROGRESS BAR ===== */
+    .progress-bar-wrap { background: var(--bg-secondary); border-radius: 100px; height: 6px; overflow: hidden; margin-top: 0.5rem; }
+    .progress-bar-fill { height: 100%; border-radius: 100px; transition: width 0.5s ease; background: linear-gradient(90deg, var(--gold), var(--green)); }
+
+    /* ===== ACTIVITY LOG ===== */
+    .activity-log { display: flex; flex-direction: column; gap: 0.75rem; }
+    .activity-item {
+      display: flex;
+      gap: 0.75rem;
+      font-size: 0.82rem;
+    }
+    .activity-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--gold);
+      margin-top: 0.35rem;
+      flex-shrink: 0;
+    }
+    .activity-text { color: var(--text-secondary); line-height: 1.5; }
+    .activity-time { color: var(--text-muted); font-size: 0.73rem; }
+
+    /* ===== EMPTY STATE ===== */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 4rem 2rem;
+      color: var(--text-secondary);
+      text-align: center;
+      gap: 0.75rem;
+    }
+    .empty-state .empty-icon { font-size: 3rem; opacity: 0.4; }
+    .empty-state p { font-size: 0.9rem; }
+
+    /* ===== TOAST ===== */
+    #toast-container {
+      position: fixed;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .toast {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 0.75rem 1.25rem;
+      font-size: 0.875rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      animation: toast-in 0.3s ease;
+      box-shadow: var(--shadow);
+    }
+    @keyframes toast-in { from { opacity: 0; transform: translateX(40px); } to { opacity: 1; transform: translateX(0); } }
+    .toast.success { border-left: 3px solid var(--green); }
+    .toast.error { border-left: 3px solid var(--red); }
+    .toast.info { border-left: 3px solid var(--gold); }
+
+    /* ===== TABS ===== */
+    .tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); margin-bottom: 1.5rem; }
+    .tab-btn {
+      padding: 0.65rem 1.25rem;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      cursor: pointer;
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      transition: all var(--transition);
+      font-family: 'Inter', sans-serif;
+    }
+    .tab-btn:hover { color: var(--text-primary); }
+    .tab-btn.active { color: var(--gold); border-bottom-color: var(--gold); }
+
+    /* ===== CLIENT INFO ===== */
+    .client-info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 1rem;
+    }
+    .info-item { display: flex; flex-direction: column; gap: 0.2rem; }
+    .info-label { font-size: 0.72rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; }
+    .info-value { font-size: 0.9rem; font-weight: 500; }
+
+    /* ===== BACK BUTTON ===== */
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      cursor: pointer;
+      margin-bottom: 1.25rem;
+      padding: 0.35rem 0.75rem 0.35rem 0.5rem;
+      border-radius: var(--radius-sm);
+      border: 1px solid transparent;
+      transition: all var(--transition);
+      background: none;
+      font-family: 'Inter', sans-serif;
+      font-weight: 500;
+    }
+    .back-btn:hover { background: var(--bg-elevated); border-color: var(--border); color: var(--text-primary); }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+      #sidebar { transform: translateX(-100%); }
+      #sidebar.open { transform: translateX(0); }
+      #main-content { margin-left: 0; padding: 1rem; }
+      .stat-grid { grid-template-columns: repeat(2, 1fr); }
+      .stepper { gap: 0; }
+    }
+
+    /* ===== ANIMATIONS ===== */
+    .fade-in { animation: fade-in 0.3s ease; }
+    @keyframes fade-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* ===== GLOW ACCENTS ===== */
+    .glow-gold { box-shadow: 0 0 20px rgba(240,180,41,0.2); }
+
+    /* user management */
+    .user-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.9rem 1rem;
+      border-bottom: 1px solid var(--border);
+      transition: background var(--transition);
+    }
+    .user-row:hover { background: var(--bg-elevated); }
+    .user-row:last-child { border-bottom: none; }
+    .user-row-avatar {
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--gold), var(--blue-accent));
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 0.9rem; color: #fff;
+      flex-shrink: 0;
+    }
+    .user-row-info { flex: 1; }
+    .user-row-name { font-size: 0.875rem; font-weight: 600; }
+    .user-row-email { font-size: 0.78rem; color: var(--text-secondary); }
+
+    /* roadblock highlight */
+    .step-item.roadblock-status { background: rgba(239,68,68,0.04); border-radius: var(--radius-sm); padding: 0.75rem; margin: 0.5rem -0.25rem; }
+
+    .notice {
+      background: var(--gold-dim);
+      border: 1px solid rgba(240,180,41,0.2);
+      border-radius: var(--radius-sm);
+      padding: 0.65rem 1rem;
+      font-size: 0.82rem;
+      color: var(--gold);
+      margin-top: 0.5rem;
+    }
+
+    /* ===== REVIEW TAB ===== */
+    .case-tabs { display: flex; gap: 0; border-bottom: 2px solid var(--border); margin-bottom: 1.5rem; }
+    .case-tab-btn {
+      padding: 0.6rem 1.5rem;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      cursor: pointer;
+      background: none;
+      border: none;
+      border-bottom: 3px solid transparent;
+      margin-bottom: -2px;
+      transition: all var(--transition);
+      font-family: 'Inter', sans-serif;
+    }
+    .case-tab-btn:hover { color: var(--text-primary); }
+    .case-tab-btn.active { color: var(--gold); border-bottom-color: var(--gold); }
+
+    .review-summary-banner {
+      background: linear-gradient(135deg, var(--gold-dim), rgba(38,107,175,0.08));
+      border: 1px solid rgba(221,96,35,0.25);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+      flex-wrap: wrap;
+    }
+    .review-banner-main { flex: 1; }
+    .review-banner-title { font-size: 1.5rem; font-weight: 800; color: var(--text-primary); }
+    .review-banner-sub { font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.25rem; }
+    .review-kpi-grid { display: flex; gap: 1.5rem; flex-wrap: wrap; }
+    .review-kpi {
+      display: flex; flex-direction: column; align-items: center;
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); padding: 0.75rem 1.25rem;
+      min-width: 90px;
+    }
+    .review-kpi-val { font-size: 1.6rem; font-weight: 800; color: var(--text-primary); line-height: 1; }
+    .review-kpi-label { font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 0.25rem; font-weight: 600; text-align: center; }
+    .review-kpi-val.red { color: var(--red); }
+    .review-kpi-val.green { color: var(--green); }
+
+    .review-section-title { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 1rem; }
+
+    .stage-timeline-row {
+      display: grid;
+      grid-template-columns: 140px 1fr 70px;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 0.6rem;
+    }
+    .stage-timeline-label { font-size: 0.82rem; font-weight: 600; color: var(--text-secondary); }
+    .stage-timeline-bar-wrap { background: var(--bg-elevated); border-radius: 100px; height: 14px; overflow: hidden; position: relative; }
+    .stage-timeline-bar-fill { height: 100%; border-radius: 100px; transition: width 0.6s ease; }
+    .stage-timeline-days { font-size: 0.78rem; font-weight: 700; color: var(--text-primary); text-align: right; }
+    .stage-rb-tag { font-size: 0.68rem; background: var(--red-dim); color: var(--red); border-radius: 4px; padding: 0.1rem 0.4rem; margin-left: 0.4rem; font-weight: 600; }
+
+    .rb-log-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+    .rb-log-table thead th { padding: 0.5rem 0.75rem; text-align: left; font-size: 0.72rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid var(--border); }
+    .rb-log-table tbody td { padding: 0.65rem 0.75rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+    .rb-log-table tbody tr:last-child td { border-bottom: none; }
+    .rb-log-table tbody tr:hover { background: var(--bg-elevated); }
+
+    .in-progress-notice {
+      display: flex; align-items: center; gap: 1rem;
+      background: var(--bg-elevated); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .in-progress-notice-icon { font-size: 2rem; }
+    .in-progress-notice h4 { font-size: 0.95rem; margin-bottom: 0.25rem; }
+    .in-progress-notice p { font-size: 0.82rem; color: var(--text-secondary); }
+  </style>
+</head>
+<body>
+
+<div id="app">
+  <!-- LOGIN PAGE -->
+  <div id="login-page">
+    <div class="login-box fade-in">
+      <div class="login-logo">
+        <div class="login-logo-icon">📊</div>
+        <div>
+          <div class="login-logo-text"><div class="brand-logo"><span class="brand-part-1">Succes</span><span class="brand-part-2">su₹e</span></div></div>
+          <div class="login-logo-sub">Wise money management</div>
+          <div class="app-badge">Account Opening Tracker</div>
+        </div>
+      </div>
+      <h2 class="login-title">Welcome back</h2>
+      <p class="login-sub">Sign in to continue to your workspace</p>
+      <div class="login-form">
+        <div class="form-group">
+          <label class="form-label" for="login-email">Email Address</label>
+          <input class="form-input" type="email" id="login-email" placeholder="you@firm.com" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="login-password">Password</label>
+          <input class="form-input" type="password" id="login-password" placeholder="••••••••" />
+          <span class="form-error hidden" id="login-error">Invalid email or password.</span>
+        </div>
+        <button class="btn btn-primary w-full" id="login-btn" style="justify-content:center;padding:0.75rem;" onclick="doLogin()">Sign In →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN APP (hidden until login) -->
+  <div id="main-app" class="hidden" style="display:none;width:100%;flex:1;">
+    <!-- Sidebar -->
+    <nav id="sidebar">
+      <div class="sidebar-logo">
+        <div class="sidebar-logo-icon">📊</div>
+        <div>
+          <div class="sidebar-logo-text"><div class="brand-logo" style="font-size:0.85rem;"><span class="brand-part-1">Succes</span><span class="brand-part-2">su₹e</span></div></div>
+          <div class="sidebar-logo-sub">Wise money management</div>
+          <div class="app-badge" style="margin-top:0.4rem; font-size:0.6rem; padding:0.15rem 0.4rem;">Account Opening Tracker</div>
+        </div>
+      </div>
+      <div class="sidebar-nav" id="sidebar-nav">
+        <!-- dynamic -->
+      </div>
+      <div class="sidebar-user">
+        <div class="user-avatar" id="sidebar-avatar">U</div>
+        <div class="user-info">
+          <div class="user-name" id="sidebar-user-name">User</div>
+          <div class="user-role-text" id="sidebar-user-role">—</div>
+        </div>
+        <button class="logout-btn" onclick="doLogout()" title="Sign out">⏻</button>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main id="main-content">
+      <!-- Pages rendered here dynamically -->
+    </main>
+  </div>
+</div>
+
+<!-- MODALS -->
+<div id="modal-overlay" class="modal-overlay hidden" onclick="closeModalOnOverlay(event)">
+  <div class="modal" id="modal-content"></div>
+</div>
+
+<!-- TOAST -->
+<div id="toast-container"></div>
+
+<script>
+// ═══════════════════════════════════════════════════
+//  DATA & STATE
+// ═══════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════
+//  FIREBASE CONFIG  ←←← PASTE YOUR CONFIG VALUES HERE
+// ═══════════════════════════════════════════════════
+const firebaseConfig = {
+  apiKey: "AIzaSyBnkX-UI5TONthpHJPzyFBz_QRIyOMOSGk",
+  authDomain: "successure-tracker.firebaseapp.com",
+  projectId: "successure-tracker",
+  storageBucket: "successure-tracker.firebasestorage.app",
+  messagingSenderId: "917414332183",
+  appId: "1:917414332183:web:121b7992f7bcc545f95952"
+};
+
+const STORAGE_KEYS = {
+  currentUser: 'act_current_user'  // session stays per-device
+};
+
+let db = null;
+let auth = null;
+let usersCol = null;
+let casesCol = null;
+let cachedUsers = [];
+let cachedCases = [];
+let pendingRerender = false;
+let unsubUsers = null;
+let unsubCases = null;
+let syncStarted = false;
+
+function firebaseConfigured() {
+  return !Object.values(firebaseConfig).some(v => String(v).includes('PASTE_'));
+}
+
+// ----- Data accessors (synchronous, read from in-memory cache) -----
+function getUsers() { return cachedUsers; }
+function getCases() { return cachedCases; }
+
+function cleanForFirestore(obj) {
+  // Strip undefined / functions so Firestore accepts the document
+  return JSON.parse(JSON.stringify(obj));
+}
+
+// ----- Single-document writers (with optimistic local update) -----
+function saveCase(c) {
+  const i = cachedCases.findIndex(x => x.id === c.id);
+  if (i >= 0) cachedCases[i] = c; else cachedCases.push(c);
+  if (!casesCol) return Promise.resolve();
+  return casesCol.doc(c.id).set(cleanForFirestore(c))
+    .catch(err => { console.error('saveCase failed', err); showToast('Could not sync to server — check your connection', 'error'); });
+}
+
+function saveUser(u) {
+  const i = cachedUsers.findIndex(x => x.id === u.id);
+  if (i >= 0) cachedUsers[i] = u; else cachedUsers.push(u);
+  if (!usersCol) return Promise.resolve();
+  return usersCol.doc(u.id).set(cleanForFirestore(u))
+    .catch(err => { console.error('saveUser failed', err); showToast('Could not sync to server — check your connection', 'error'); });
+}
+
+// ----- Session (per-device, stays in localStorage) -----
+function getCurrentUser() { return JSON.parse(localStorage.getItem(STORAGE_KEYS.currentUser) || 'null'); }
+function saveCurrentUser(u) { localStorage.setItem(STORAGE_KEYS.currentUser, JSON.stringify(u)); }
+
+// ----- Real-time sync: keep caches live and re-render on remote changes -----
+function startRealtimeSync() {
+  return new Promise((resolve, reject) => {
+    syncStarted = true;
+    let usersReady = false, casesReady = false, failed = false;
+    const checkReady = () => { if (usersReady && casesReady) resolve(); };
+    const onErr = (err) => {
+      console.error('sync error', err);
+      if (!failed) { failed = true; syncStarted = false; stopRealtimeSync(); reject(err); }
+    };
+
+    unsubUsers = usersCol.onSnapshot(snap => {
+      cachedUsers = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      if (currentUser) {
+        const fresh = cachedUsers.find(u => u.id === currentUser.id);
+        if (fresh) currentUser = fresh;
+      }
+      if (!usersReady) { usersReady = true; checkReady(); } else { maybeRerender(); }
+    }, onErr);
+
+    unsubCases = casesCol.onSnapshot(snap => {
+      cachedCases = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      if (!casesReady) { casesReady = true; checkReady(); } else { maybeRerender(); }
+    }, onErr);
+  });
+}
+
+function stopRealtimeSync() {
+  if (unsubUsers) { unsubUsers(); unsubUsers = null; }
+  if (unsubCases) { unsubCases(); unsubCases = null; }
+  syncStarted = false;
+  cachedUsers = [];
+  cachedCases = [];
+}
+
+// Re-render the current page when teammates make changes — but never wipe out
+// what the user is actively typing or a modal they have open.
+function maybeRerender() {
+  if (!currentUser) return;
+  const modalOpen = !document.getElementById('modal-overlay').classList.contains('hidden');
+  const ae = document.activeElement;
+  const isEditing = ae && ['INPUT', 'TEXTAREA', 'SELECT'].includes(ae.tagName)
+                    && document.getElementById('main-content')?.contains(ae);
+  if (modalOpen || isEditing) {
+    pendingRerender = true;
+    showRefreshBanner();
+    return;
+  }
+  navigateTo(currentPage, currentCaseId);
+}
+
+function showRefreshBanner() {
+  if (document.getElementById('refresh-banner')) return;
+  const b = document.createElement('div');
+  b.id = 'refresh-banner';
+  b.innerHTML = '🔄 Your teammates made changes — click to refresh';
+  b.style.cssText = 'position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);z-index:9998;background:var(--gold);color:#fff;padding:0.65rem 1.25rem;border-radius:100px;font-size:0.85rem;font-weight:600;cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,0.15);border:none;';
+  b.onclick = () => { pendingRerender = false; b.remove(); navigateTo(currentPage, currentCaseId); };
+  document.body.appendChild(b);
+}
+function clearRefreshBanner() {
+  pendingRerender = false;
+  const b = document.getElementById('refresh-banner');
+  if (b) b.remove();
+}
+
+const DEFAULT_DOCUMENTS = [
+  'PAN Card',
+  'Aadhaar Card',
+  'Bank Statement (last 6 months)',
+  'Cancelled Cheque',
+  'Passport-size Photo',
+  'Income Proof',
+  'Address Proof'
+];
+
+const STAGES_CONFIG = [
+  {
+    id: 'initiation',
+    label: '🚀 Initiation',
+    icon: '🚀',
+    name: 'Initiation',
+    steps: [
+      { id: 'poc_our', label: 'POC assigned from our office' },
+      { id: 'poc_client', label: 'POC identified from client\'s office' },
+      { id: 'wa_group', label: 'Common WhatsApp group created' },
+      { id: 'motilal_poc', label: 'Motilal POC added to group' }
+    ]
+  },
+  {
+    id: 'documents',
+    label: '📄 Documents',
+    icon: '📄',
+    name: 'Documents',
+    steps: [
+      { id: 'doc_list_sent', label: 'Document list sent to client (Email / WhatsApp)' },
+      { id: 'doc_checklist', label: 'Document received checklist', isDocChecklist: true },
+      { id: 'otps', label: 'OTPs received from client' },
+      { id: 'selfie', label: 'Selfie verification received from client' }
+    ]
+  },
+  {
+    id: 'idp_mapping',
+    label: '🗺️ DP Mapping',
+    icon: '🗺️',
+    name: 'DP Mapping',
+    steps: [
+      { id: 'mod_form_sent', label: 'Modification form sent to client (soft copy)' },
+      { id: 'mod_form_received', label: 'Signed modification form received from client' },
+      { id: 'cml_copy', label: 'CML copy received (signed + stamped by existing broker)' }
+    ]
+  },
+  {
+    id: 'courier',
+    label: '📦 Courier',
+    icon: '📦',
+    name: 'Courier',
+    steps: [
+      { id: 'client_verified', label: 'Client verified documents (pre-courier check)' },
+      { id: 'docs_couriered', label: 'Both documents couriered to Motilal office' },
+      { id: 'tracking', label: 'Courier tracking number noted (add in comment)' }
+    ]
+  },
+  {
+    id: 'pledge',
+    label: '🏦 Pledge & Account',
+    icon: '🏦',
+    name: 'Pledge & Account',
+    steps: [
+      { id: 'pledge_sample_sent', label: 'Pledge form sample sent to client (soft copy)' },
+      { id: 'motilal_cml_shared', label: 'Motilal CML shared with client (to help fill pledge form)' },
+      { id: 'pledge_submitted', label: 'Pledge form filled + signed submitted to existing broker by client' },
+      { id: 'account_opened', label: 'Account opened & Pledge done ✅' }
+    ]
+  }
+];
+
+// (data accessors getUsers/getCases/saveCase/saveUser are defined in the Firebase section above)
+
+let currentUser = null;
+let currentPage = 'dashboard';
+let currentCaseId = null;
+
+
+// ═══════════════════════════════════════════════════
+//  AUTH
+// ═══════════════════════════════════════════════════
+function fillDemo(email, pass) {
+  document.getElementById('login-email').value = email;
+  document.getElementById('login-password').value = pass;
+}
+
+function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pass = document.getElementById('login-password').value;
+  const errEl = document.getElementById('login-error');
+  errEl.classList.add('hidden');
+  if (!email || !pass) { errEl.textContent = 'Enter your email and password.'; errEl.classList.remove('hidden'); return; }
+
+  const btn = document.getElementById('login-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Signing in…'; }
+
+  auth.signInWithEmailAndPassword(email, pass)
+    .catch(err => {
+      console.error('login error', err);
+      let msg = 'Invalid email or password.';
+      if (err.code === 'auth/too-many-requests') msg = 'Too many attempts. Try again in a few minutes.';
+      else if (err.code === 'auth/network-request-failed') msg = 'Network error — check your connection.';
+      errEl.textContent = msg;
+      errEl.classList.remove('hidden');
+      if (btn) { btn.disabled = false; btn.textContent = 'Sign In →'; }
+    });
+  // Success is handled by onAuthStateChanged in initApp()
+}
+
+function doLogout() {
+  clearRefreshBanner();
+  currentPage = 'dashboard';
+  currentCaseId = null;
+  auth.signOut();
+  // UI reset is handled by onAuthStateChanged
+}
+
+// ═══════════════════════════════════════════════════
+//  APP SHELL
+// ═══════════════════════════════════════════════════
+function showApp() {
+  document.getElementById('login-page').style.display = 'none';
+  document.getElementById('login-page').classList.add('hidden');
+  const appEl = document.getElementById('main-app');
+  appEl.style.display = 'flex';
+  appEl.classList.remove('hidden');
+  renderSidebar();
+  navigateTo('dashboard');
+}
+
+function renderSidebar() {
+  const nav = document.getElementById('sidebar-nav');
+  document.getElementById('sidebar-avatar').textContent = currentUser.name[0];
+  document.getElementById('sidebar-user-name').textContent = currentUser.name;
+  document.getElementById('sidebar-user-role').textContent = currentUser.role === 'admin' ? '🛡️ Admin' : '👤 Employee';
+
+  const isAdmin = currentUser.role === 'admin';
+  const items = isAdmin
+    ? [
+        { id: 'dashboard', label: 'Dashboard', icon: '🏠' },
+        { id: 'all-cases', label: 'All Cases', icon: '📁' },
+        { id: 'my-cases', label: 'My Cases', icon: '📋' },
+        { id: 'users', label: 'User Management', icon: '👥' }
+      ]
+    : [
+        { id: 'dashboard', label: 'Dashboard', icon: '🏠' },
+        { id: 'my-cases', label: 'My Cases', icon: '📋' }
+      ];
+
+  nav.innerHTML = items.map(item => `
+    <div class="nav-item ${currentPage === item.id ? 'active' : ''}" onclick="navigateTo('${item.id}')" id="nav-${item.id}">
+      <span class="nav-icon">${item.icon}</span>
+      ${item.label}
+    </div>
+  `).join('');
+}
+
+function setActiveNav(page) {
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  const el = document.getElementById('nav-' + page);
+  if (el) el.classList.add('active');
+}
+
+function navigateTo(page, caseId) {
+  clearRefreshBanner();
+  currentPage = page;
+  currentCaseId = caseId || null;
+  setActiveNav(page);
+  const main = document.getElementById('main-content');
+
+  if (page === 'dashboard') main.innerHTML = renderDashboard();
+  else if (page === 'all-cases') main.innerHTML = renderAllCases();
+  else if (page === 'my-cases') main.innerHTML = renderMyCases();
+  else if (page === 'users') main.innerHTML = renderUserManagement();
+  else if (page === 'case-detail') main.innerHTML = renderCaseDetail(caseId);
+
+  main.querySelectorAll('.fade-in-page').forEach(el => el.classList.add('fade-in'));
+}
+
+// ═══════════════════════════════════════════════════
+//  HELPERS
+// ═══════════════════════════════════════════════════
+function caseProgress(c) {
+  let total = 0, done = 0;
+  STAGES_CONFIG.forEach(stage => {
+    stage.steps.forEach(step => {
+      total++;
+      const s = c.stages[stage.id]?.steps[step.id];
+      if (s && s.status === 'done') done++;
+    });
+  });
+  return total ? Math.round((done / total) * 100) : 0;
+}
+
+function overallCaseStatus(c) {
+  let hasRoadblock = false, hasInProgress = false, allDone = true;
+  STAGES_CONFIG.forEach(stage => {
+    stage.steps.forEach(step => {
+      const s = c.stages[stage.id]?.steps[step.id];
+      if (!s || s.status === 'pending') { allDone = false; hasInProgress = true; }
+      if (s && s.status === 'roadblock') { hasRoadblock = true; allDone = false; }
+      if (s && s.status === 'in-progress') { hasInProgress = true; allDone = false; }
+    });
+  });
+  if (hasRoadblock) return 'roadblock';
+  if (allDone) return 'done';
+  return 'pending';
+}
+
+function currentStageName(c) {
+  for (const stage of STAGES_CONFIG) {
+    const st = c.stages[stage.id];
+    const allDone = stage.steps.every(step => st?.steps[step.id]?.status === 'done');
+    if (!allDone) return stage.name;
+  }
+  return 'Completed';
+}
+
+function statusBadge(status) {
+  const map = { done: 'badge-done', pending: 'badge-pending', roadblock: 'badge-roadblock', 'not-started': 'badge-not-started', 'in-progress': 'badge-pending' };
+  const icon = { done: '✓', pending: '⏳', roadblock: '🚫', 'not-started': '—', 'in-progress': '🔄' };
+  const lbl = { done: 'Done', pending: 'Pending', roadblock: 'Roadblock', 'not-started': 'Not Started', 'in-progress': 'In Progress' };
+  return `<span class="badge ${map[status]||'badge-not-started'}">${icon[status]||''} ${lbl[status]||status}</span>`;
+}
+
+function formatDate(iso) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+function formatDateTime(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  const date = d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+  const time = d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+  return `${date}, ${time}`;
+}
+
+function getUserName(id) {
+  const u = getUsers().find(u => u.id === id);
+  return u ? u.name : 'Unknown';
+}
+
+// ═══════════════════════════════════════════════════
+//  DASHBOARD
+// ═══════════════════════════════════════════════════
+function renderDashboard() {
+  const cases = currentUser.role === 'admin' ? getCases() : getCases().filter(c => c.assignedTo === currentUser.id);
+  const total = cases.length;
+  const done = cases.filter(c => overallCaseStatus(c) === 'done').length;
+  const roadblocks = cases.filter(c => overallCaseStatus(c) === 'roadblock').length;
+  const inProgress = total - done;
+  const recentCases = cases.slice(-5).reverse();
+  const isAdmin = currentUser.role === 'admin';
+
+  return `
+  <div class="fade-in-page">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Good day, ${currentUser.name.split(' ')[0]} 👋</h1>
+        <p class="page-subtitle">${new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+      </div>
+      <button class="btn btn-primary" onclick="openNewCaseModal()">+ New Case</button>
+    </div>
+
+    <div class="stat-grid mb-6">
+      <div class="stat-card gold">
+        <div class="stat-icon">📁</div>
+        <div class="stat-value">${total}</div>
+        <div class="stat-label">Total Cases</div>
+      </div>
+      <div class="stat-card blue">
+        <div class="stat-icon">🔄</div>
+        <div class="stat-value">${inProgress}</div>
+        <div class="stat-label">In Progress</div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-icon">✅</div>
+        <div class="stat-value">${done}</div>
+        <div class="stat-label">Completed</div>
+      </div>
+      <div class="stat-card red">
+        <div class="stat-icon">🚫</div>
+        <div class="stat-value">${roadblocks}</div>
+        <div class="stat-label">Roadblocks</div>
+      </div>
+    </div>
+
+    ${roadblocks > 0 ? `
+    <div style="margin-bottom:1.5rem;">
+      <h3 style="margin-bottom:0.75rem;">🚨 Cases with Roadblocks</h3>
+      <div class="card card-sm">
+        ${cases.filter(c => overallCaseStatus(c) === 'roadblock').map(c => `
+          <div class="user-row" onclick="navigateTo('case-detail','${c.id}')">
+            <div style="flex:1;">
+              <div style="font-weight:600;font-size:0.875rem;">${c.clientName}</div>
+              <div style="font-size:0.75rem;color:var(--text-secondary);">Stage: ${currentStageName(c)} · Assigned: ${c.assignedName}</div>
+            </div>
+            <span class="badge badge-roadblock">🚫 Roadblock</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>` : ''}
+
+    <div class="flex justify-between items-center mb-4">
+      <h3>Recent Cases</h3>
+      <button class="btn btn-secondary btn-sm" onclick="navigateTo('${isAdmin ? 'all-cases' : 'my-cases'}')">View All →</button>
+    </div>
+    <div class="card" style="padding:0;">
+      ${recentCases.length === 0 ? `
+        <div class="empty-state">
+          <div class="empty-icon">📭</div>
+          <h4>No cases yet</h4>
+          <p>Create your first case to get started.</p>
+          <button class="btn btn-primary mt-4" onclick="openNewCaseModal()">+ New Case</button>
+        </div>` : `
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>Client</th>
+              ${isAdmin ? '<th>Assigned To</th>' : ''}
+              <th>Current Stage</th>
+              <th>Status</th>
+              <th>Progress</th>
+              <th>Updated</th>
+            </tr></thead>
+            <tbody>
+              ${recentCases.map(c => {
+                const prog = caseProgress(c);
+                const status = overallCaseStatus(c);
+                return `<tr onclick="navigateTo('case-detail','${c.id}')">
+                  <td><div style="font-weight:600;">${c.clientName}</div><div style="font-size:0.75rem;color:var(--text-secondary);">${c.clientEmail}</div></td>
+                  ${isAdmin ? `<td>${c.assignedName}</td>` : ''}
+                  <td>${currentStageName(c)}</td>
+                  <td>${statusBadge(status)}</td>
+                  <td><div style="font-size:0.75rem;color:var(--text-secondary);margin-bottom:0.25rem;">${prog}%</div><div class="progress-bar-wrap" style="width:100px;"><div class="progress-bar-fill" style="width:${prog}%"></div></div></td>
+                  <td style="color:var(--text-secondary);font-size:0.82rem;">${formatDate(c.updatedAt)}</td>
+                </tr>`;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>`}
+    </div>
+  </div>`;
+}
+
+// ═══════════════════════════════════════════════════
+//  ALL CASES
+// ═══════════════════════════════════════════════════
+function renderAllCases(filterEmployee) {
+  const allCases = getCases();
+  const users = getUsers().filter(u => u.role === 'employee');
+
+  return `
+  <div class="fade-in-page">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">All Cases</h1>
+        <p class="page-subtitle">${allCases.length} total cases across all employees</p>
+      </div>
+      <button class="btn btn-primary" onclick="openNewCaseModal()">+ New Case</button>
+    </div>
+    <div class="filter-bar">
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input class="form-input search-input" id="case-search" placeholder="Search by client name..." oninput="filterCasesTable()" />
+      </div>
+      <select class="form-select" style="width:180px;" id="filter-stage" onchange="filterCasesTable()">
+        <option value="">All Stages</option>
+        ${STAGES_CONFIG.map(s => `<option value="${s.id}">${s.name}</option>`).join('')}
+      </select>
+      <select class="form-select" style="width:180px;" id="filter-status" onchange="filterCasesTable()">
+        <option value="">All Statuses</option>
+        <option value="done">Done</option>
+        <option value="pending">Pending</option>
+        <option value="roadblock">Roadblock</option>
+      </select>
+      <select class="form-select" style="width:180px;" id="filter-employee" onchange="filterCasesTable()">
+        <option value="">All Employees</option>
+        ${users.map(u => `<option value="${u.id}">${u.name}</option>`).join('')}
+      </select>
+      <button class="btn btn-secondary btn-sm" onclick="exportCSV()">⬇ Export CSV</button>
+    </div>
+    <div class="card" style="padding:0;" id="cases-table-wrap">
+      ${renderCasesTable(allCases)}
+    </div>
+  </div>`;
+}
+
+function renderMyCases() {
+  const myCases = getCases().filter(c => c.assignedTo === currentUser.id);
+  return `
+  <div class="fade-in-page">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">My Cases</h1>
+        <p class="page-subtitle">${myCases.length} cases assigned to you</p>
+      </div>
+      <button class="btn btn-primary" onclick="openNewCaseModal()">+ New Case</button>
+    </div>
+    <div class="filter-bar">
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input class="form-input search-input" id="case-search" placeholder="Search by client name..." oninput="filterMyCasesTable()" />
+      </div>
+      <select class="form-select" style="width:180px;" id="filter-status" onchange="filterMyCasesTable()">
+        <option value="">All Statuses</option>
+        <option value="done">Done</option>
+        <option value="pending">Pending</option>
+        <option value="roadblock">Roadblock</option>
+      </select>
+    </div>
+    <div class="card" style="padding:0;" id="cases-table-wrap">
+      ${renderCasesTable(myCases, false)}
+    </div>
+  </div>`;
+}
+
+function renderCasesTable(cases, showEmployee = true) {
+  if (!cases.length) return `<div class="empty-state"><div class="empty-icon">📭</div><h4>No cases found</h4><p>Create a new case or adjust filters.</p></div>`;
+  return `
+  <div class="table-wrap">
+    <table>
+      <thead><tr>
+        <th>Client</th>
+        ${showEmployee ? '<th>Assigned To</th>' : ''}
+        <th>Current Stage</th>
+        <th>Roadblocks</th>
+        <th>Status</th>
+        <th>Progress</th>
+        <th>Created</th>
+        <th>Updated</th>
+      </tr></thead>
+      <tbody>
+        ${cases.map(c => {
+          const prog = caseProgress(c);
+          const status = overallCaseStatus(c);
+          let rbCount = 0;
+          STAGES_CONFIG.forEach(st => st.steps.forEach(sp => { if (c.stages[st.id]?.steps[sp.id]?.status === 'roadblock') rbCount++; }));
+          return `<tr data-id="${c.id}" data-status="${status}" data-stage="${currentStageName(c).toLowerCase()}" data-employee="${c.assignedTo}" onclick="navigateTo('case-detail','${c.id}')">
+            <td><div style="font-weight:600;">${c.clientName}</div><div style="font-size:0.75rem;color:var(--text-secondary);">${c.clientEmail}</div></td>
+            ${showEmployee ? `<td>${c.assignedName}</td>` : ''}
+            <td>${currentStageName(c)}</td>
+            <td>${rbCount > 0 ? `<span class="badge badge-roadblock">🚫 ${rbCount}</span>` : '<span style="color:var(--text-muted);">—</span>'}</td>
+            <td>${statusBadge(status)}</td>
+            <td><div style="font-size:0.75rem;color:var(--text-secondary);margin-bottom:0.3rem;">${prog}%</div><div class="progress-bar-wrap" style="width:80px;"><div class="progress-bar-fill" style="width:${prog}%"></div></div></td>
+            <td style="color:var(--text-secondary);font-size:0.82rem;">${formatDate(c.createdAt)}</td>
+            <td style="color:var(--text-secondary);font-size:0.82rem;">${formatDate(c.updatedAt)}</td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>
+  </div>`;
+}
+
+function filterCasesTable() {
+  const search = (document.getElementById('case-search')?.value || '').toLowerCase();
+  const statusF = document.getElementById('filter-status')?.value || '';
+  const stageF = document.getElementById('filter-stage')?.value || '';
+  const empF = document.getElementById('filter-employee')?.value || '';
+  let cases = getCases();
+  if (search) cases = cases.filter(c => c.clientName.toLowerCase().includes(search) || c.clientEmail.toLowerCase().includes(search));
+  if (statusF) cases = cases.filter(c => overallCaseStatus(c) === statusF);
+  if (stageF) cases = cases.filter(c => currentStageName(c).toLowerCase().includes(stageF));
+  if (empF) cases = cases.filter(c => c.assignedTo === empF);
+  document.getElementById('cases-table-wrap').innerHTML = renderCasesTable(cases);
+}
+
+function filterMyCasesTable() {
+  const search = (document.getElementById('case-search')?.value || '').toLowerCase();
+  const statusF = document.getElementById('filter-status')?.value || '';
+  let cases = getCases().filter(c => c.assignedTo === currentUser.id);
+  if (search) cases = cases.filter(c => c.clientName.toLowerCase().includes(search));
+  if (statusF) cases = cases.filter(c => overallCaseStatus(c) === statusF);
+  document.getElementById('cases-table-wrap').innerHTML = renderCasesTable(cases, false);
+}
+
+function exportCSV() {
+  const cases = getCases();
+  const rows = [['Client Name', 'Email', 'Contact', 'Assigned To', 'Current Stage', 'Status', 'Progress %', 'Created', 'Updated']];
+  cases.forEach(c => {
+    rows.push([c.clientName, c.clientEmail, c.clientContact, c.assignedName, currentStageName(c), overallCaseStatus(c), caseProgress(c), formatDate(c.createdAt), formatDate(c.updatedAt)]);
+  });
+  const csv = rows.map(r => r.map(v => `"${v}"`).join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  a.download = 'account_opening_cases.csv';
+  a.click();
+  showToast('CSV exported!', 'success');
+}
+
+function isStageEditable(c, si) {
+  if (si === 0) return true;
+  
+  if (si === 2) { 
+    // DP Mapping exception: Initiation done + Docs Sent
+    const initDone = STAGES_CONFIG[0].steps.every(sp => c.stages['initiation']?.steps[sp.id]?.status === 'done');
+    const docStep = c.stages['documents']?.steps['doc_checklist'];
+    const docs = docStep?.documents || [];
+    const allSent = docs.length > 0 && docs.every(d => d.sent === true);
+    return initDone && allSent;
+  }
+
+  // Normal strict sequential check for all other stages
+  for (let i = 0; i < si; i++) {
+    const pSt = STAGES_CONFIG[i];
+    const isDone = pSt.steps.every(sp => c.stages[pSt.id]?.steps[sp.id]?.status === 'done');
+    if (!isDone) return false;
+  }
+  return true;
+}
+
+// ═══════════════════════════════════════════════════
+//  CASE DETAIL
+// ═══════════════════════════════════════════════════
+function renderCaseDetail(caseId) {
+  const cases = getCases();
+  const c = cases.find(x => x.id === caseId);
+  if (!c) return '<p>Case not found.</p>';
+  const canEdit = currentUser.role === 'admin' || c.assignedTo === currentUser.id;
+  const prog = caseProgress(c);
+  const status = overallCaseStatus(c);
+
+  // Stepper
+  const stepperHtml = STAGES_CONFIG.map((stage, i) => {
+    const st = c.stages[stage.id];
+    const allDone = stage.steps.every(sp => st?.steps[sp.id]?.status === 'done');
+    const hasRb = stage.steps.some(sp => st?.steps[sp.id]?.status === 'roadblock');
+    const hasAny = stage.steps.some(sp => st?.steps[sp.id]?.status === 'done' || st?.steps[sp.id]?.status === 'roadblock');
+    let nodeClass = '';
+    if (allDone) nodeClass = 'done';
+    else if (hasRb) nodeClass = 'roadblock';
+    else if (hasAny) nodeClass = 'in-progress';
+    const icon = allDone ? '✓' : hasRb ? '✗' : (i + 1);
+    const prevDone = i === 0 || STAGES_CONFIG.slice(0, i).every(ps => ps.steps.every(sp => c.stages[ps.id]?.steps[sp.id]?.status === 'done'));
+    return `<div class="step-node ${nodeClass} ${!prevDone ? 'prev-node' : ''}">
+      <div class="step-circle">${icon}</div>
+      <div class="step-label">${stage.name}</div>
+    </div>`;
+  }).join('');
+
+  // Stages
+  const stagesHtml = STAGES_CONFIG.map((stage, si) => {
+    const st = c.stages[stage.id];
+    const doneCount = stage.steps.filter(sp => st?.steps[sp.id]?.status === 'done').length;
+    const totalCount = stage.steps.length;
+    const hasRb = stage.steps.some(sp => st?.steps[sp.id]?.status === 'roadblock');
+    const isOpen = si === 0 || doneCount < totalCount;
+    
+    const isEditable = canEdit && isStageEditable(c, si);
+
+    const stepsHtml = stage.steps.map(step => {
+      const s = st?.steps[step.id] || { status: 'pending', comment: '' };
+      const isRb = s.status === 'roadblock';
+      const docChecklist = step.isDocChecklist ? renderDocChecklist(s.documents || DEFAULT_DOCUMENTS.map(d => ({ name: d, sent: false, received: false })), step.id, stage.id, caseId, isEditable) : '';
+      
+      let commentsHtml = '';
+      const allComments = s.comments || [];
+      // Support legacy single comment from seed data
+      if (s.comment && allComments.length === 0) {
+        allComments.push({ text: s.comment, by: s.updatedBy || 'Unknown', status: s.status, at: s.updatedAt || new Date().toISOString() });
+      }
+      
+      if (allComments.length > 0) {
+        commentsHtml = `<div class="step-comments-history" style="margin-top:0.75rem;display:flex;flex-direction:column;gap:0.5rem;">` +
+          allComments.map(c => `
+            <div style="font-size:0.82rem;color:var(--text-secondary);background:var(--bg-secondary);padding:0.5rem 0.75rem;border-radius:6px;border-left:3px solid ${c.status === 'done' ? 'var(--green)' : c.status === 'roadblock' ? 'var(--red)' : 'var(--yellow)'};">
+              <div style="display:flex;justify-content:space-between;margin-bottom:0.3rem;">
+                <div><strong style="color:var(--text-primary);">${c.by}</strong> <span style="font-size:0.7rem;opacity:0.8;">marked as <span class="badge ${c.status === 'done' ? 'badge-done' : c.status === 'roadblock' ? 'badge-roadblock' : 'badge-pending'}" style="font-size:0.6rem;padding:0.1rem 0.4rem;margin-left:0.2rem;">${c.status}</span></span></div>
+                <div style="font-size:0.7rem;color:var(--text-muted);">${formatDateTime(c.at)}</div>
+              </div>
+              <div style="color:var(--text-primary);white-space:pre-wrap;">${c.text}</div>
+            </div>
+          `).join('') + `</div>`;
+      }
+
+      return `
+      <div class="step-item ${isRb ? 'roadblock-status' : ''}" id="step-${stage.id}-${step.id}">
+        <div class="step-item-header">
+          <div>
+            <div class="step-title">${step.label}</div>
+            ${s.updatedBy ? `<div class="step-meta">Last updated by ${s.updatedBy} &middot; ${formatDate(s.updatedAt)}</div>` : ''}
+          </div>
+          <div class="step-controls">
+            ${isEditable ? `
+              <select class="form-select" style="width:140px;" id="sel-${stage.id}-${step.id}" onchange="onStepStatusChange('${caseId}','${stage.id}','${step.id}',this.value)">
+                <option value="pending" ${s.status==='pending'?'selected':''}>&#8987; Pending</option>
+                <option value="done" ${s.status==='done'?'selected':''}>&#9989; Done</option>
+                <option value="roadblock" ${s.status==='roadblock'?'selected':''}>&#128683; Roadblock</option>
+              </select>
+            ` : statusBadge(s.status)}
+          </div>
+        </div>
+        ${docChecklist}
+        ${commentsHtml}
+        ${isEditable ? `
+        <div class="step-comment-wrap" style="margin-top:${commentsHtml ? '1rem' : '0.5rem'};">
+          <textarea class="form-textarea w-full" id="cmt-${stage.id}-${step.id}" placeholder="${s.status === 'done' ? 'Add optional comment...' : 'Add comment (required for pending/roadblock)...'}"></textarea>
+          <button class="btn btn-primary btn-sm" onclick="saveStep('${caseId}','${stage.id}','${step.id}')">Save</button>
+        </div>` : ''}
+        ${isRb ? `<div class="notice">&#128680; This step has a roadblock. Please resolve before proceeding.</div>` : ''}
+      </div>`;
+    }).join('');
+
+    const lockNotice = (!isEditable && canEdit) ? `<div style="padding:0.75rem 1.25rem;background:var(--bg-elevated);border-bottom:1px solid var(--border);color:var(--text-secondary);font-size:0.8rem;display:flex;align-items:center;gap:0.5rem;"><span>&#128274;</span> This stage is locked until previous stages meet requirements.</div>` : '';
+
+    const stepPercent = totalCount ? Math.round((doneCount / totalCount) * 100) : 0;
+    return `
+    <div class="stage-card ${isOpen ? 'open' : ''}" id="stage-card-${stage.id}">
+      <div class="stage-header" onclick="toggleStage('${stage.id}')">
+        <span class="stage-icon">${stage.icon}</span>
+        <span class="stage-title">${stage.name}</span>
+        <span class="stage-progress">${doneCount}/${totalCount} steps</span>
+        ${hasRb ? '<span class="badge badge-roadblock" style="font-size:0.7rem;">&#128683; Roadblock</span>' : ''}
+        <span class="stage-chevron">&#9662;</span>
+      </div>
+      <div class="stage-body" style="padding-top:0;">
+        ${lockNotice}
+        <div style="padding:0 1.25rem 1.25rem;">
+          <div class="progress-bar-wrap" style="margin:1rem 0;">
+            <div class="progress-bar-fill" style="width:${stepPercent}%;background:${hasRb ? 'var(--red)' : 'linear-gradient(90deg,var(--gold),var(--green))'}"></div>
+          </div>
+          ${stepsHtml}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Activity log
+  const activityHtml = (c.activity || []).slice(-10).reverse().map(a => `
+    <div class="activity-item">
+      <div class="activity-dot"></div>
+      <div>
+        <div class="activity-text">${a.text}</div>
+        <div class="activity-time">${formatDate(a.time)}</div>
+      </div>
+    </div>`).join('');
+
+  return `
+  <div class="fade-in-page">
+    <button class="back-btn" onclick="navigateTo('${currentUser.role === 'admin' ? 'all-cases' : 'my-cases'}')">&#8592; Back to Cases</button>
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">${c.clientName}</h1>
+        <p class="page-subtitle">Case opened ${formatDate(c.createdAt)} &middot; Assigned to ${c.assignedName}</p>
+      </div>
+      <div style="display:flex;gap:0.5rem;align-items:center;">
+        ${statusBadge(status)}
+        <span style="font-size:0.85rem;color:var(--text-secondary);">${prog}% complete</span>
+      </div>
+    </div>
+
+    <!-- Progress -->
+    <div class="progress-bar-wrap mb-6">
+      <div class="progress-bar-fill" style="width:${prog}%;height:8px;"></div>
+    </div>
+
+    <!-- TABS -->
+    <div class="case-tabs">
+      <button class="case-tab-btn active" id="tab-btn-workflow" onclick="switchCaseTab('workflow','${caseId}')">&#128203; Workflow</button>
+      <button class="case-tab-btn" id="tab-btn-review" onclick="switchCaseTab('review','${caseId}')">&#128202; Review &amp; Analytics</button>
+    </div>
+
+    <!-- TAB: WORKFLOW -->
+    <div id="tab-workflow">
+      <div style="display:grid;grid-template-columns:1fr 300px;gap:1.5rem;">
+        <div>
+          <div class="stepper">${stepperHtml}</div>
+          ${stagesHtml}
+          ${prog === 100 && !c.caseClosedAt && canEdit ? `
+            <button class="submit-case-btn" onclick="submitFinalCase('${caseId}')">
+              <span>&#x1F389;</span> Complete &amp; Submit Case
+            </button>
+          ` : ''}
+        </div>
+        <div>
+          <div class="card mb-4">
+            <h4 style="margin-bottom:1rem;">&#128203; Client Info</h4>
+            <div style="display:flex;flex-direction:column;gap:0.75rem;">
+              <div class="info-item"><div class="info-label">Name</div><div class="info-value">${c.clientName}</div></div>
+              <div class="info-item"><div class="info-label">Email</div><div class="info-value" style="word-break:break-all;">${c.clientEmail}</div></div>
+              <div class="info-item"><div class="info-label">Contact</div><div class="info-value">${c.clientContact}</div></div>
+              <div class="info-item"><div class="info-label">Assigned To</div><div class="info-value">${c.assignedName}</div></div>
+              <div class="info-item"><div class="info-label">Created</div><div class="info-value">${formatDate(c.createdAt)}</div></div>
+            </div>
+          </div>
+          <div class="card">
+            <h4 style="margin-bottom:1rem;">&#128221; Activity Log</h4>
+            <div class="activity-log">
+              ${activityHtml || '<p style="color:var(--text-muted);font-size:0.82rem;">No activity yet.</p>'}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: REVIEW -->
+    <div id="tab-review" style="display:none;">
+      ${renderReviewTab(c)}
+    </div>
+  </div>`;
+}
+
+// ═══════════════════════════════════════════════════
+//  REVIEW TAB HELPERS
+// ═══════════════════════════════════════════════════
+function switchCaseTab(tab, caseId) {
+  document.getElementById('tab-workflow').style.display = tab === 'workflow' ? '' : 'none';
+  document.getElementById('tab-review').style.display = tab === 'review' ? '' : 'none';
+  document.getElementById('tab-btn-workflow').classList.toggle('active', tab === 'workflow');
+  document.getElementById('tab-btn-review').classList.toggle('active', tab === 'review');
+}
+
+function daysBetween(a, b) {
+  if (!a || !b) return null;
+  return Math.max(0, Math.round((new Date(b) - new Date(a)) / (1000 * 60 * 60 * 24)));
+}
+
+function generateCaseReview(c) {
+  const now = new Date().toISOString();
+  const isClosed = !!c.caseClosedAt;
+  const endTime = isClosed ? c.caseClosedAt : now;
+  const totalDays = daysBetween(c.createdAt, endTime);
+
+  let totalRoadblocks = 0;
+  let totalRoadblockDays = 0;
+  let roadblockLog = [];
+
+  const stageStats = STAGES_CONFIG.map(stage => {
+    const stageData = c.stages[stage.id];
+    const startTime = stageData?.firstTouchedAt || null;
+
+    // Find last step done time in this stage
+    let lastDoneAt = null;
+    let stageRoadblocks = 0;
+    let stageRoadblockDays = 0;
+
+    stage.steps.forEach(stepCfg => {
+      const step = stageData?.steps[stepCfg.id];
+      if (!step) return;
+
+      const comments = step.comments || [];
+      let rbStartAt = null;
+
+      comments.forEach((entry, idx) => {
+        if (entry.status === 'roadblock') {
+          stageRoadblocks++;
+          totalRoadblocks++;
+          rbStartAt = entry.at;
+          // Resolution is next comment entry or now
+          const nextEntry = comments[idx + 1];
+          const resolvedAt = nextEntry ? nextEntry.at : null;
+          const rbDays = resolvedAt ? daysBetween(rbStartAt, resolvedAt) : null;
+          if (rbDays !== null) {
+            stageRoadblockDays += rbDays;
+            totalRoadblockDays += rbDays;
+          }
+          roadblockLog.push({
+            stage: stage.name,
+            step: stepCfg.label,
+            by: entry.by,
+            at: entry.at,
+            comment: entry.text,
+            resolvedAt: resolvedAt,
+            delayDays: rbDays
+          });
+        }
+        if (entry.status === 'done') {
+          if (!lastDoneAt || new Date(entry.at) > new Date(lastDoneAt)) {
+            lastDoneAt = entry.at;
+          }
+        }
+      });
+
+      // Also check updatedAt as fallback
+      if (step.status === 'done' && step.updatedAt) {
+        if (!lastDoneAt || new Date(step.updatedAt) > new Date(lastDoneAt)) {
+          lastDoneAt = step.updatedAt;
+        }
+      }
+    });
+
+    const days = (startTime && lastDoneAt) ? daysBetween(startTime, lastDoneAt) : null;
+    const isComplete = stage.steps.every(sp => stageData?.steps[sp.id]?.status === 'done');
+
+    return {
+      id: stage.id,
+      name: stage.name,
+      icon: stage.icon,
+      startTime,
+      lastDoneAt,
+      days,
+      isComplete,
+      roadblocks: stageRoadblocks,
+      roadblockDays: stageRoadblockDays
+    };
+  });
+
+  // Max stage days for bar chart scaling
+  const maxStageDays = Math.max(1, ...stageStats.map(s => s.days || 0));
+
+  return { isClosed, totalDays, totalRoadblocks, totalRoadblockDays, stageStats, maxStageDays, roadblockLog, endTime };
+}
+
+function renderReviewTab(c) {
+  const r = generateCaseReview(c);
+  const prog = caseProgress(c);
+
+  // ---- SUMMARY BANNER ----
+  const closedOnStr = r.isClosed ? `Opened ${formatDate(c.createdAt)} &rarr; Closed ${formatDate(c.caseClosedAt)}` : `Opened ${formatDate(c.createdAt)} &middot; Still in progress`;
+  const bannerTitle = r.isClosed
+    ? `&#9989; Account Opened in ${r.totalDays} Day${r.totalDays !== 1 ? 's' : ''}`
+    : `&#9203; In Progress &mdash; ${r.totalDays} Day${r.totalDays !== 1 ? 's' : ''} so far`;
+
+  const kpis = [
+    { val: r.totalDays ?? '—', label: r.isClosed ? 'Total Days' : 'Days Elapsed', cls: '' },
+    { val: prog + '%', label: 'Completed', cls: 'green' },
+    { val: r.totalRoadblocks, label: 'Roadblocks', cls: r.totalRoadblocks > 0 ? 'red' : '' },
+    { val: r.totalRoadblockDays > 0 ? r.totalRoadblockDays + 'd' : '0d', label: 'Days Lost', cls: r.totalRoadblockDays > 0 ? 'red' : '' }
+  ];
+
+  const bannerHtml = `
+  <div class="review-summary-banner">
+    <div class="review-banner-main">
+      <div class="review-banner-title">${bannerTitle}</div>
+      <div class="review-banner-sub">${closedOnStr}${r.totalRoadblocks > 0 ? ` &middot; ${r.totalRoadblocks} roadblock${r.totalRoadblocks > 1 ? 's' : ''} encountered &middot; ${r.totalRoadblockDays} day${r.totalRoadblockDays !== 1 ? 's' : ''} lost to roadblocks` : ''}</div>
+    </div>
+    <div class="review-kpi-grid">
+      ${kpis.map(k => `<div class="review-kpi"><div class="review-kpi-val ${k.cls}">${k.val}</div><div class="review-kpi-label">${k.label}</div></div>`).join('')}
+    </div>
+  </div>`;
+
+  // ---- STAGE TIMELINE ----
+  const timelineRows = r.stageStats.map(s => {
+    const pct = s.days !== null ? Math.round((s.days / r.maxStageDays) * 100) : 0;
+    const barColor = !s.isComplete ? 'var(--text-muted)' : s.roadblocks > 0 ? 'var(--red)' : 'var(--green)';
+    const daysLabel = s.days !== null ? `${s.days}d` : s.startTime ? 'ongoing' : 'not started';
+    const rbTag = s.roadblocks > 0 ? `<span class="stage-rb-tag">&#x1F6AB; ${s.roadblocks} roadblock${s.roadblocks > 1 ? 's' : ''}</span>` : '';
+    return `
+    <div class="stage-timeline-row">
+      <div class="stage-timeline-label">${s.icon} ${s.name}${rbTag}</div>
+      <div class="stage-timeline-bar-wrap">
+        <div class="stage-timeline-bar-fill" style="width:${pct}%;background:${barColor};"></div>
+      </div>
+      <div class="stage-timeline-days">${daysLabel}</div>
+    </div>`;
+  }).join('');
+
+  // ---- ROADBLOCK LOG ----
+  let rbLogHtml = '';
+  if (r.roadblockLog.length > 0) {
+    const rows = r.roadblockLog.map(rb => `
+    <tr>
+      <td><span style="font-size:0.75rem;color:var(--text-muted);">${rb.stage}</span><br><strong>${rb.step}</strong></td>
+      <td>${rb.by}</td>
+      <td>${formatDate(rb.at)}</td>
+      <td style="color:var(--text-secondary);">${rb.comment || '<em>No comment</em>'}</td>
+      <td>${rb.resolvedAt ? `<span class="badge badge-done">&#10003; Resolved ${formatDate(rb.resolvedAt)}</span>${rb.delayDays !== null ? `<br><span style="font-size:0.7rem;color:var(--red);">${rb.delayDays}d delay</span>` : ''}` : '<span class="badge badge-roadblock">&#x1F6AB; Open</span>'}</td>
+    </tr>`).join('');
+    rbLogHtml = `
+    <div class="card" style="margin-top:1.5rem;padding:0;">
+      <div style="padding:1rem 1.25rem;border-bottom:1px solid var(--border);"><p class="review-section-title" style="margin:0;">&#x1F6A8; Roadblock Log</p></div>
+      <div class="table-wrap">
+        <table class="rb-log-table">
+          <thead><tr><th>Step</th><th>Raised By</th><th>Date</th><th>Comment</th><th>Status</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    </div>`;
+  } else {
+    rbLogHtml = `<div class="card" style="margin-top:1.5rem;">
+      <div style="display:flex;align-items:center;gap:0.75rem;">
+        <span style="font-size:1.5rem;">&#x1F389;</span>
+        <div><strong>No Roadblocks!</strong><p style="font-size:0.82rem;color:var(--text-secondary);margin-top:0.2rem;">This case had no roadblocks. Great execution!</p></div>
+      </div>
+    </div>`;
+  }
+
+  // ---- STAGE TABLE ----
+  const stageTableRows = r.stageStats.map(s => `
+  <tr>
+    <td>${s.icon} ${s.name}</td>
+    <td>${s.startTime ? formatDate(s.startTime) : '<span style="color:var(--text-muted)">—</span>'}</td>
+    <td>${s.lastDoneAt ? formatDate(s.lastDoneAt) : '<span style="color:var(--text-muted)">—</span>'}</td>
+    <td>${s.days !== null ? `<strong>${s.days}</strong> day${s.days !== 1 ? 's' : ''}` : '<span style="color:var(--text-muted)">—</span>'}</td>
+    <td>${s.roadblocks > 0 ? `<span class="badge badge-roadblock">${s.roadblocks}</span>` : '<span style="color:var(--text-muted)">—</span>'}</td>
+    <td>${s.roadblockDays > 0 ? `<span style="color:var(--red);font-weight:700;">${s.roadblockDays}d</span>` : '<span style="color:var(--text-muted)">0d</span>'}</td>
+    <td>${s.isComplete ? '<span class="badge badge-done">&#10003; Done</span>' : s.startTime ? '<span class="badge badge-pending">In Progress</span>' : '<span class="badge badge-not-started">Not Started</span>'}</td>
+  </tr>`).join('');
+
+  return `
+  <div>
+    ${bannerHtml}
+
+    <div class="card" style="margin-bottom:1.5rem;">
+      <p class="review-section-title">&#9201; Stage Duration Timeline</p>
+      ${timelineRows}
+      <div style="display:flex;gap:1rem;margin-top:1rem;flex-wrap:wrap;">
+        <div style="display:flex;align-items:center;gap:0.4rem;font-size:0.75rem;color:var(--text-secondary);"><div style="width:12px;height:12px;border-radius:2px;background:var(--green);"></div> Completed</div>
+        <div style="display:flex;align-items:center;gap:0.4rem;font-size:0.75rem;color:var(--text-secondary);"><div style="width:12px;height:12px;border-radius:2px;background:var(--red);"></div> Had roadblocks</div>
+        <div style="display:flex;align-items:center;gap:0.4rem;font-size:0.75rem;color:var(--text-secondary);"><div style="width:12px;height:12px;border-radius:2px;background:var(--text-muted);"></div> Not yet complete</div>
+      </div>
+    </div>
+
+    <div class="card" style="padding:0;margin-bottom:1.5rem;">
+      <div style="padding:1rem 1.25rem;border-bottom:1px solid var(--border);"><p class="review-section-title" style="margin:0;">&#128197; Stage-by-Stage Breakdown</p></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Stage</th><th>Started</th><th>Completed</th><th>Duration</th><th>Roadblocks</th><th>Days Lost</th><th>Status</th></tr></thead>
+          <tbody>${stageTableRows}</tbody>
+        </table>
+      </div>
+    </div>
+
+    ${rbLogHtml}
+  </div>`;
+}
+
+function renderDocChecklist(documents, stepId, stageId, caseId, canEdit) {
+  return `
+  <div class="doc-checklist" id="doc-checklist-${stageId}">
+    ${documents.map((doc, i) => `
+      <div class="doc-row ${doc.received ? 'received' : ''}" id="doc-row-${i}-${stageId}">
+        <div class="doc-name">${doc.name}</div>
+        <div class="doc-status-group">
+          <div class="checkbox-wrap">
+            <input type="checkbox" id="doc-sent-${i}-${stageId}" ${doc.sent ? 'checked' : ''} ${!canEdit ? 'disabled' : ''} onchange="toggleDoc('${caseId}','${stageId}','${stepId}',${i},'sent',this.checked)">
+            <label for="doc-sent-${i}-${stageId}">Sent</label>
+          </div>
+          <div class="checkbox-wrap">
+            <input type="checkbox" id="doc-recv-${i}-${stageId}" ${doc.received ? 'checked' : ''} ${!canEdit ? 'disabled' : ''} onchange="toggleDoc('${caseId}','${stageId}','${stepId}',${i},'received',this.checked)">
+            <label for="doc-recv-${i}-${stageId}">Received</label>
+          </div>
+          ${doc.received ? '<span class="badge badge-done" style="font-size:0.68rem;">✓</span>' : doc.sent ? '<span class="badge badge-pending" style="font-size:0.68rem;">⏳ Awaiting</span>' : ''}
+        </div>
+      </div>`).join('')}
+  </div>`;
+}
+
+function toggleDoc(caseId, stageId, stepId, docIndex, field, value) {
+  const cases = getCases();
+  const c = cases.find(x => x.id === caseId);
+  if (!c) return;
+  const step = c.stages[stageId].steps[stepId];
+  if (!step.documents) step.documents = DEFAULT_DOCUMENTS.map(d => ({ name: d, sent: false, received: false }));
+  step.documents[docIndex][field] = value;
+  c.updatedAt = new Date().toISOString();
+  saveCase(c);
+  showToast(`Document ${field === 'sent' ? 'sent status' : 'receipt'} updated`, 'success');
+  // update row style
+  const allReceived = step.documents[docIndex].received;
+  const row = document.getElementById(`doc-row-${docIndex}-${stageId}`);
+  if (row) { row.classList.toggle('received', allReceived); }
+}
+
+function toggleStage(stageId) {
+  const card = document.getElementById('stage-card-' + stageId);
+  if (card) card.classList.toggle('open');
+}
+
+function onStepStatusChange(caseId, stageId, stepId, newStatus) {
+  // Just highlight comment field as required
+  const cmt = document.getElementById(`cmt-${stageId}-${stepId}`);
+  if (cmt) {
+    if (newStatus === 'done') {
+      cmt.placeholder = 'Add optional comment...';
+    } else {
+      cmt.placeholder = 'Add comment (required for pending/roadblock)...';
+    }
+    cmt.style.borderColor = newStatus === 'roadblock' ? 'var(--red)' : newStatus === 'done' ? 'var(--green)' : '';
+  }
+}
+
+function saveStep(caseId, stageId, stepId) {
+  const comment = document.getElementById(`cmt-${stageId}-${stepId}`)?.value?.trim();
+  const status = document.getElementById(`sel-${stageId}-${stepId}`)?.value;
+  if (!comment && (status === 'pending' || status === 'roadblock')) { showToast('Comment is required!', 'error'); const el = document.getElementById(`cmt-${stageId}-${stepId}`); if(el){el.style.borderColor='var(--red)';el.focus();} return; }
+  const cases = getCases();
+  const c = cases.find(x => x.id === caseId);
+  if (!c) return;
+
+  const now = new Date().toISOString();
+  const stage = c.stages[stageId];
+  const step = stage.steps[stepId];
+
+  // --- Phase 1: Record stage first-touched timestamp ---
+  if (!stage.firstTouchedAt) stage.firstTouchedAt = now;
+
+  step.status = status;
+
+  // --- Migrate legacy single comment into array ---
+  if (!step.comments) {
+    step.comments = [];
+    if (step.comment) {
+      step.comments.push({ text: step.comment, by: step.updatedBy || 'Unknown', status: step.status, at: step.updatedAt || now });
+    }
+  }
+
+  // --- Always record audit entry (even status-only changes with no comment) ---
+  step.comments.push({
+    text: comment || '',
+    by: currentUser.name,
+    status: status,
+    at: now
+  });
+  if (step.comment) delete step.comment;
+
+  step.updatedBy = currentUser.name;
+  step.updatedAt = now;
+  c.updatedAt = now;
+
+  const stageCfg = STAGES_CONFIG.find(s => s.id === stageId);
+  const stepCfg = stageCfg?.steps.find(s => s.id === stepId);
+  if (!c.activity) c.activity = [];
+  c.activity.push({ text: `[${stageCfg?.name}] ${stepCfg?.label} → ${status.charAt(0).toUpperCase() + status.slice(1)} by ${currentUser.name}`, time: now });
+  saveCase(c);
+  clearRefreshBanner();
+  showToast('Step saved!', 'success');
+
+  // Re-render the whole case detail view
+  navigateTo('case-detail', caseId);
+}
+
+function submitFinalCase(caseId) {
+  const cases = getCases();
+  const c = cases.find(x => x.id === caseId);
+  if (!c) return;
+
+  const now = new Date().toISOString();
+  c.caseClosedAt = now;
+  if (!c.activity) c.activity = [];
+  c.activity.push({ text: `🎉 Case completely verified and submitted by ${currentUser.name}`, time: now });
+  
+  saveCase(c);
+  showToast('Account Opening Fully Completed!', 'success');
+  navigateTo('case-detail', caseId);
+}
+
+// ═══════════════════════════════════════════════════
+//  USER MANAGEMENT
+// ═══════════════════════════════════════════════════
+function renderUserManagement() {
+  const users = getUsers();
+  const admins = users.filter(u => u.role === 'admin');
+  const employees = users.filter(u => u.role === 'employee');
+
+  return `
+  <div class="fade-in-page">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">User Management</h1>
+        <p class="page-subtitle">${users.length} users · ${admins.length} admins · ${employees.length} employees</p>
+      </div>
+      <button class="btn btn-primary" onclick="openAddUserModal()">+ Add User</button>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;" id="user-mgmt-grid">
+      <div>
+        <h3 style="margin-bottom:0.75rem;">🛡️ Admins (${admins.length})</h3>
+        <div class="card" style="padding:0;">
+          ${admins.map(u => userRow(u)).join('') || '<div class="empty-state" style="padding:2rem;"><p>No admins.</p></div>'}
+        </div>
+      </div>
+      <div>
+        <h3 style="margin-bottom:0.75rem;">👤 Employees (${employees.length})</h3>
+        <div class="card" style="padding:0;">
+          ${employees.map(u => userRow(u)).join('') || '<div class="empty-state" style="padding:2rem;"><p>No employees.</p></div>'}
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function userRow(u) {
+  const isMe = u.id === currentUser.id;
+  const casesCount = getCases().filter(c => c.assignedTo === u.id).length;
+  return `
+  <div class="user-row">
+    <div class="user-row-avatar">${u.name[0]}</div>
+    <div class="user-row-info">
+      <div class="user-row-name">${u.name} ${isMe ? '<span class="badge badge-admin" style="font-size:0.65rem;">You</span>' : ''}</div>
+      <div class="user-row-email">${u.email} · ${casesCount} case${casesCount !== 1 ? 's' : ''}</div>
+    </div>
+    <span class="badge ${u.role === 'admin' ? 'badge-admin' : 'badge-employee'}">${u.role === 'admin' ? '🛡️ Admin' : '👤 Employee'}</span>
+    <span class="badge ${u.active ? 'badge-done' : 'badge-roadblock'}">${u.active ? 'Active' : 'Inactive'}</span>
+    ${!isMe ? `<button class="btn btn-secondary btn-sm" onclick="toggleUserActive('${u.id}')">${u.active ? 'Deactivate' : 'Activate'}</button>` : ''}
+  </div>`;
+}
+
+function toggleUserActive(userId) {
+  const users = getUsers();
+  const u = users.find(x => x.id === userId);
+  if (!u) return;
+  u.active = !u.active;
+  saveUser(u);
+  showToast(`${u.name} ${u.active ? 'activated' : 'deactivated'}`, 'success');
+  navigateTo('users');
+}
+
+// ═══════════════════════════════════════════════════
+//  MODALS
+// ═══════════════════════════════════════════════════
+function openModal(html) {
+  document.getElementById('modal-content').innerHTML = html;
+  document.getElementById('modal-overlay').classList.remove('hidden');
+}
+function closeModal() {
+  document.getElementById('modal-overlay').classList.add('hidden');
+}
+function closeModalOnOverlay(e) {
+  if (e.target === document.getElementById('modal-overlay')) closeModal();
+}
+
+function openNewCaseModal() {
+  const employees = getUsers().filter(u => u.active);
+  const isAdmin = currentUser.role === 'admin';
+  openModal(`
+    <div class="modal-header">
+      <h3 class="modal-title">📁 New Account Opening Case</h3>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-form">
+      <div class="form-group">
+        <label class="form-label">Client Name *</label>
+        <input class="form-input" id="nc-name" placeholder="e.g. Kiran Industries Ltd" />
+        <span class="form-error hidden" id="nc-name-err">Required</span>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Client Email *</label>
+        <input class="form-input" id="nc-email" type="email" placeholder="client@email.com" />
+        <span class="form-error hidden" id="nc-email-err">Required</span>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Client Contact</label>
+        <input class="form-input" id="nc-contact" placeholder="+91 98765 43210" />
+      </div>
+      ${isAdmin ? `
+      <div class="form-group">
+        <label class="form-label">Assign To *</label>
+        <select class="form-select" id="nc-assign">
+          <option value="">Select employee...</option>
+          ${employees.map(u => `<option value="${u.id}">${u.name} (${u.role})</option>`).join('')}
+        </select>
+        <span class="form-error hidden" id="nc-assign-err">Required</span>
+      </div>` : ''}
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="createCase()">Create Case →</button>
+    </div>`);
+}
+
+function createCase() {
+  const name = document.getElementById('nc-name')?.value.trim();
+  const email = document.getElementById('nc-email')?.value.trim();
+  const contact = document.getElementById('nc-contact')?.value.trim();
+  const isAdmin = currentUser.role === 'admin';
+  const assignEl = document.getElementById('nc-assign');
+  const assignId = isAdmin ? assignEl?.value : currentUser.id;
+  let valid = true;
+  if (!name) { document.getElementById('nc-name-err').classList.remove('hidden'); valid = false; }
+  if (!email) { document.getElementById('nc-email-err').classList.remove('hidden'); valid = false; }
+  if (isAdmin && !assignId) { document.getElementById('nc-assign-err').classList.remove('hidden'); valid = false; }
+  if (!valid) return;
+
+  const assignedUser = getUsers().find(u => u.id === assignId) || currentUser;
+  const stages = {};
+  STAGES_CONFIG.forEach(stage => {
+    stages[stage.id] = { steps: {} };
+    stage.steps.forEach(step => {
+      stages[stage.id].steps[step.id] = { status: 'pending', comment: '', updatedBy: null, updatedAt: null };
+      if (step.isDocChecklist) stages[stage.id].steps[step.id].documents = DEFAULT_DOCUMENTS.map(d => ({ name: d, sent: false, received: false }));
+    });
+  });
+  const newCase = {
+    id: 'c' + Date.now(),
+    clientName: name,
+    clientEmail: email,
+    clientContact: contact || '—',
+    assignedTo: assignId,
+    assignedName: assignedUser.name,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    activity: [{ text: `Case created by ${currentUser.name}`, time: new Date().toISOString() }],
+    stages
+  };
+  saveCase(newCase);
+  closeModal();
+  clearRefreshBanner();
+  showToast(`Case for ${name} created!`, 'success');
+  navigateTo('case-detail', newCase.id);
+}
+
+function openAddUserModal() {
+  openModal(`
+    <div class="modal-header">
+      <h3 class="modal-title">👤 Add New User</h3>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-form">
+      <div class="form-group">
+        <label class="form-label">Full Name *</label>
+        <input class="form-input" id="nu-name" placeholder="e.g. Priya Mehta" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email *</label>
+        <input class="form-input" id="nu-email" type="email" placeholder="user@firm.com" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password *</label>
+        <input class="form-input" id="nu-pass" type="password" placeholder="At least 6 characters" />
+        <span class="text-xs text-muted">The employee can use this to sign in, and change it later.</span>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Role *</label>
+        <select class="form-select" id="nu-role">
+          <option value="employee">👤 Employee</option>
+          <option value="admin">🛡️ Admin</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" id="add-user-btn" onclick="addUser()">Add User</button>
+    </div>`);
+}
+
+async function addUser() {
+  const name = document.getElementById('nu-name')?.value.trim();
+  const email = document.getElementById('nu-email')?.value.trim();
+  const pass = document.getElementById('nu-pass')?.value;
+  const role = document.getElementById('nu-role')?.value;
+  if (!name || !email || !pass) { showToast('All fields required!', 'error'); return; }
+  if (pass.length < 6) { showToast('Password must be at least 6 characters.', 'error'); return; }
+  if (getUsers().find(u => u.email.toLowerCase() === email.toLowerCase())) { showToast('That email already has a profile!', 'error'); return; }
+
+  const addBtn = document.getElementById('add-user-btn');
+  if (addBtn) { addBtn.disabled = true; addBtn.textContent = 'Creating…'; }
+
+  // Use a SECONDARY Firebase app so creating the account does NOT log the admin out.
+  let secondary;
+  try {
+    secondary = firebase.initializeApp(firebaseConfig, 'secondary-' + Date.now());
+    const cred = await secondary.auth().createUserWithEmailAndPassword(email, pass);
+    const uid = cred.user.uid;
+
+    // Write the profile (NO password — Firebase Auth stores the credential securely)
+    await saveUser({ id: uid, name, email, role, active: true });
+
+    await secondary.auth().signOut();
+    await secondary.delete();
+
+    closeModal();
+    clearRefreshBanner();
+    showToast(`User ${name} added!`, 'success');
+    navigateTo('users');
+  } catch (err) {
+    console.error('addUser error', err);
+    let msg = 'Could not create user.';
+    if (err.code === 'auth/email-already-in-use') msg = 'That email already has a login account.';
+    else if (err.code === 'auth/invalid-email') msg = 'That email address is not valid.';
+    else if (err.code === 'auth/weak-password') msg = 'Password is too weak (min 6 characters).';
+    showToast(msg, 'error');
+    if (addBtn) { addBtn.disabled = false; addBtn.textContent = 'Add User'; }
+    if (secondary) { try { await secondary.delete(); } catch (e) {} }
+  }
+}
+
+// ═══════════════════════════════════════════════════
+//  TOAST
+// ═══════════════════════════════════════════════════
+function showToast(msg, type = 'info') {
+  const icon = { success: '✅', error: '❌', info: 'ℹ️' };
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = `${icon[type]} ${msg}`;
+  document.getElementById('toast-container').appendChild(el);
+  setTimeout(() => el.remove(), 3500);
+}
+
+// ═══════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  initApp();
+});
+
+async function initApp() {
+  const loginPage = document.getElementById('login-page');
+
+  if (!firebaseConfigured()) {
+    loginPage.style.display = 'flex';
+    showConfigNotice();
+    return;
+  }
+
+  try {
+    firebase.initializeApp(firebaseConfig);
+    auth = firebase.auth();
+    db = firebase.firestore();
+    usersCol = db.collection('users');
+    casesCol = db.collection('cases');
+  } catch (err) {
+    console.error('Firebase init failed', err);
+    loginPage.style.display = 'flex';
+    showConfigNotice('Could not connect. Double-check your Firebase config.');
+    return;
+  }
+
+  // Auth drives the whole app: this fires on load, login, and logout.
+  auth.onAuthStateChanged(async (fbUser) => {
+    if (fbUser) {
+      // Signed in — load data (allowed by security rules now) and find profile
+      try {
+        if (!syncStarted) await startRealtimeSync();
+        let profile = cachedUsers.find(u => u.id === fbUser.uid);
+
+        // Fallback: read the profile directly if the cache hasn't caught it yet
+        if (!profile) {
+          const doc = await usersCol.doc(fbUser.uid).get();
+          if (doc.exists) profile = { id: doc.id, ...doc.data() };
+        }
+
+        if (!profile) {
+          showAuthError('Your login works, but no employee profile is set up for this account. Ask an admin to add you.');
+          await auth.signOut();
+          return;
+        }
+        if (profile.active === false) {
+          showAuthError('Your account has been deactivated. Contact an admin.');
+          await auth.signOut();
+          return;
+        }
+        currentUser = profile;
+        showApp();
+      } catch (err) {
+        console.error('post-login load failed', err);
+        showAuthError('Signed in, but the database blocked access. Usually this means your user profile document is missing or its ID does not match your account. See the checklist.');
+        await auth.signOut();
+      }
+    } else {
+      // Signed out
+      currentUser = null;
+      stopRealtimeSync();
+      showLogin();
+    }
+  });
+}
+
+function showLogin() {
+  const btn = document.getElementById('login-btn');
+  if (btn) { btn.disabled = false; btn.textContent = 'Sign In →'; }
+  const pw = document.getElementById('login-password');
+  if (pw) pw.value = '';
+  const appEl = document.getElementById('main-app');
+  appEl.style.display = 'none';
+  appEl.classList.add('hidden');
+  const loginPage = document.getElementById('login-page');
+  loginPage.style.display = 'flex';
+  loginPage.classList.remove('hidden');
+}
+
+function showAuthError(msg) {
+  const errEl = document.getElementById('login-error');
+  if (errEl) { errEl.textContent = msg; errEl.classList.remove('hidden'); }
+  showLogin();
+}
+
+function showConfigNotice(msg) {
+  const box = document.querySelector('.login-box');
+  if (!box || document.getElementById('config-notice')) return;
+  const n = document.createElement('div');
+  n.id = 'config-notice';
+  n.style.cssText = 'margin-top:1rem;padding:0.85rem 1rem;background:var(--red-dim);border:1px solid rgba(239,68,68,0.3);border-radius:var(--radius-sm);color:var(--red);font-size:0.8rem;line-height:1.5;';
+  n.innerHTML = msg || '⚙️ <strong>Setup needed:</strong> Add your Firebase config near the top of the &lt;script&gt; section in this file, then reload.';
+  box.appendChild(n);
+}
+
+// Handle Enter key on login
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !document.getElementById('login-page').classList.contains('hidden')) {
+    doLogin();
+  }
+});
+</script>
+</body>
+</html>
