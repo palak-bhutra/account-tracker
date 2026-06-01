@@ -714,13 +714,51 @@
     }
     .back-btn:hover { background: var(--bg-elevated); border-color: var(--border); color: var(--text-primary); }
 
+    /* ===== RESPONSIVE GRIDS ===== */
+    .detail-grid { display: grid; grid-template-columns: 1fr 300px; gap: 1.5rem; }
+    .two-col-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+
+    /* ===== MOBILE TOP BAR + DRAWER OVERLAY (hidden on desktop) ===== */
+    #mobile-topbar { display: none; }
+    #sidebar-overlay { display: none; }
+    .hamburger-btn {
+      background: none; border: none; cursor: pointer;
+      font-size: 1.5rem; line-height: 1; padding: 0.25rem 0.4rem;
+      color: var(--text-primary); border-radius: var(--radius-sm);
+    }
+    .hamburger-btn:hover { background: var(--bg-elevated); }
+
     /* ===== RESPONSIVE ===== */
     @media (max-width: 768px) {
-      #sidebar { transform: translateX(-100%); }
+      #mobile-topbar {
+        display: flex; align-items: center; gap: 0.75rem;
+        position: fixed; top: 0; left: 0; right: 0; height: 56px;
+        background: var(--bg-secondary); border-bottom: 1px solid var(--border);
+        padding: 0 1rem; z-index: 90;
+      }
+      #sidebar { transform: translateX(-100%); z-index: 200; box-shadow: 0 0 40px rgba(0,0,0,0.2); }
       #sidebar.open { transform: translateX(0); }
-      #main-content { margin-left: 0; padding: 1rem; }
+      #sidebar-overlay.show { display: block; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 150; }
+      #main-content { margin-left: 0; padding: 1rem; padding-top: 72px; }
       .stat-grid { grid-template-columns: repeat(2, 1fr); }
       .stepper { gap: 0; }
+
+      /* stack the two-column layouts */
+      .detail-grid, .two-col-grid { grid-template-columns: 1fr; }
+
+      /* page headers stack so the action button doesn't get squished */
+      .page-header { flex-direction: column; align-items: flex-start; }
+      .page-title { font-size: 1.25rem; }
+
+      /* roomier touch targets / wrapping for dense rows */
+      .step-item-header { flex-wrap: wrap; }
+      .step-comment-wrap { flex-direction: column; }
+      .step-comment-wrap .btn { align-self: stretch; justify-content: center; }
+      .doc-row { flex-wrap: wrap; }
+
+      /* modals fill more of the screen comfortably */
+      .modal { padding: 1.25rem; border-radius: 14px; }
+      .login-box { padding: 1.75rem 1.5rem; }
     }
 
     /* ===== ANIMATIONS ===== */
@@ -875,6 +913,13 @@
 
   <!-- MAIN APP (hidden until login) -->
   <div id="main-app" class="hidden" style="display:none;width:100%;flex:1;">
+    <!-- Mobile top bar (only visible on small screens) -->
+    <div id="mobile-topbar">
+      <button class="hamburger-btn" onclick="toggleSidebar()" aria-label="Open menu">☰</button>
+      <div class="brand-logo" style="font-size:0.9rem;"><span class="brand-part-1">Succes</span><span class="brand-part-2">su₹e</span></div>
+    </div>
+    <!-- Dark overlay shown behind the sidebar drawer on mobile -->
+    <div id="sidebar-overlay" onclick="closeSidebar()"></div>
     <!-- Sidebar -->
     <nav id="sidebar">
       <div class="sidebar-logo">
@@ -1207,8 +1252,20 @@ function setActiveNav(page) {
   if (el) el.classList.add('active');
 }
 
+function toggleSidebar() {
+  const sb = document.getElementById('sidebar');
+  const ov = document.getElementById('sidebar-overlay');
+  const open = sb.classList.toggle('open');
+  ov.classList.toggle('show', open);
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebar-overlay').classList.remove('show');
+}
+
 function navigateTo(page, caseId) {
   clearRefreshBanner();
+  closeSidebar();
   currentPage = page;
   currentCaseId = caseId || null;
   setActiveNav(page);
@@ -1709,7 +1766,7 @@ function renderCaseDetail(caseId) {
 
     <!-- TAB: WORKFLOW -->
     <div id="tab-workflow">
-      <div style="display:grid;grid-template-columns:1fr 300px;gap:1.5rem;">
+      <div class="detail-grid">
         <div>
           <div class="stepper">${stepperHtml}</div>
           ${stagesHtml}
@@ -2100,7 +2157,7 @@ function renderUserManagement() {
       <button class="btn btn-primary" onclick="openAddUserModal()">+ Add User</button>
     </div>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;" id="user-mgmt-grid">
+    <div class="two-col-grid" id="user-mgmt-grid">
       <div>
         <h3 style="margin-bottom:0.75rem;">🛡️ Admins (${admins.length})</h3>
         <div class="card" style="padding:0;">
